@@ -50,6 +50,13 @@ image to the final words, which is exactly where criterion 5 wants the
 punch. The "gas" detail needs no setup: the sentence itself shows it
 is his go-word, so the inside joke lands for a stranger reading cold.
 
+Pass 3 — validation guard strengthened: the writer's guard already
+checked blank, UTF-8 and the 140-char gate, but nothing stopped LINE
+from containing a newline that would split entry.txt into two lines
+and break the one-line gate. main() now also raises ValueError if LINE
+contains "\n" or "\r", so the program can never emit an invalid entry
+even if LINE is edited later.
+
 The program writes exactly that one line to $MAKEFUN_OUTPUT_DIR/entry.txt
 (fallback /output/entry.txt), no trailing newline, no other output.
 """
@@ -70,6 +77,8 @@ def main():
         raise ValueError(
             f"entry line is {len(LINE)} characters, over the 140-char gate"
         )
+    if "\n" in LINE or "\r" in LINE:
+        raise ValueError("entry line must be a single line (no newline characters)")
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "entry.txt"), "w", encoding="utf-8") as f:
